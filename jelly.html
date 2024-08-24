@@ -6,14 +6,16 @@
   <title>AI Video Caption & Overlay Tool</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
 </head>
 <body>
 
   <header class="header">
     <div class="logo">AI Video Tool</div>
     <div class="nav-buttons">
-      <button class="btn">Login</button>
-      <button class="btn">Sign Up</button>
+      <button class="btn" id="loginBtn">Login</button>
+      <button class="btn" id="signupBtn">Sign Up</button>
     </div>
   </header>
 
@@ -48,13 +50,73 @@
     </div>
   </div>
 
+  <div id="loginPopupOverlay" class="popup-overlay">
+    <div class="popup-content">
+      <h2>Login</h2>
+      <form>
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Enter your username">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password">
+        <button type="submit" class="popup-button">Login</button>
+      </form>
+      <span id="closeLogin" class="close">&times;</span>
+    </div>
+  </div>
+
+  <div id="signupPopupOverlay" class="popup-overlay">
+    <div class="popup-content">
+      <h2>Sign Up</h2>
+      <form>
+        <label for="signup-username">Username</label>
+        <input type="text" id="signup-username" name="username" placeholder="Choose a username">
+        <label for="signup-password">Password</label>
+        <input type="password" id="signup-password" name="password" placeholder="Create a password">
+        <button type="submit" class="popup-button">Sign Up</button>
+      </form>
+      <span id="closeSignup" class="close">&times;</span>
+    </div>
+  </div>
+    
   <div class="footer">
     <p>&copy; 2024 AI Video Tool. All rights reserved.</p>
   </div>
 
   <script>
+    const loginBtn = document.getElementById("loginBtn");
+    const signupBtn = document.getElementById("signupBtn");
+    const loginPopupOverlay = document.getElementById("loginPopupOverlay");
+    const signupPopupOverlay = document.getElementById("signupPopupOverlay");
+    const closeLogin = document.getElementById("closeLogin");
+    const closeSignup = document.getElementById("closeSignup");
+
     document.getElementById('get-started').addEventListener('click', function() {
       document.getElementById('features').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    loginBtn.addEventListener("click", function () {
+        loginPopupOverlay.classList.add("show");
+    });
+
+    signupBtn.addEventListener("click", function () {
+        signupPopupOverlay.classList.add("show");
+    });
+
+    closeLogin.addEventListener("click", function () {
+        loginPopupOverlay.classList.remove("show");
+    });
+
+    closeSignup.addEventListener("click", function () {
+        signupPopupOverlay.classList.remove("show");
+    });
+
+    window.addEventListener("click", function (event) {
+        if (event.target == loginPopupOverlay) {
+            loginPopupOverlay.classList.remove("show");
+        }
+        if (event.target == signupPopupOverlay) {
+            signupPopupOverlay.classList.remove("show");
+        }
     });
   </script>
 
