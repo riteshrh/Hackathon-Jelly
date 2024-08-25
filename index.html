@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Video Caption & Overlay Tool</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+  <script type="module" src="firebaseinit.js"></script>
 </head>
+
 <body>
 
   <header class="header">
@@ -53,12 +54,13 @@
   <div id="loginPopupOverlay" class="popup-overlay">
     <div class="popup-content">
       <h2>Login</h2>
-      <form>
-        <label for="username">Username</label>
-        <input type="text" id="username" name="username" placeholder="Enter your username">
+      <form id="login-form">
+        <label for="username">Email</label>
+        <input type="text" id="username" name="username" placeholder="Enter your email">
         <label for="password">Password</label>
         <input type="password" id="password" name="password" placeholder="Enter your password">
         <button type="submit" class="popup-button">Login</button>
+        <p>Don't have an account? <span onclick="toggleAuth()">Sign Up</span></p>
       </form>
       <span id="closeLogin" class="close">&times;</span>
     </div>
@@ -67,9 +69,9 @@
   <div id="signupPopupOverlay" class="popup-overlay">
     <div class="popup-content">
       <h2>Sign Up</h2>
-      <form>
-        <label for="signup-username">Username</label>
-        <input type="text" id="signup-username" name="username" placeholder="Choose a username">
+      <form id="sign-up-form">
+        <label for="signup-email">Email</label>
+        <input type="text" id="signup-email" name="username" placeholder="Enter your email">
         <label for="signup-password">Password</label>
         <input type="password" id="signup-password" name="password" placeholder="Create a password">
         <button type="submit" class="popup-button">Sign Up</button>
@@ -77,9 +79,13 @@
       <span id="closeSignup" class="close">&times;</span>
     </div>
   </div>
-    
+
   <div class="footer">
     <p>&copy; 2024 AI Video Tool. All rights reserved.</p>
+  </div>
+
+  <div id="loader" class="loader" style="display: none;">
+    <div class="spinner"></div>
   </div>
 
   <script>
@@ -89,36 +95,107 @@
     const signupPopupOverlay = document.getElementById("signupPopupOverlay");
     const closeLogin = document.getElementById("closeLogin");
     const closeSignup = document.getElementById("closeSignup");
+    const loader = document.getElementById("loader");
 
-    document.getElementById('get-started').addEventListener('click', function() {
+    document.getElementById('get-started').addEventListener('click', function () {
       document.getElementById('features').scrollIntoView({ behavior: 'smooth' });
     });
 
     loginBtn.addEventListener("click", function () {
-        loginPopupOverlay.classList.add("show");
+      loginPopupOverlay.classList.add("show");
     });
 
     signupBtn.addEventListener("click", function () {
-        signupPopupOverlay.classList.add("show");
+      signupPopupOverlay.classList.add("show");
     });
 
     closeLogin.addEventListener("click", function () {
-        loginPopupOverlay.classList.remove("show");
+      loginPopupOverlay.classList.remove("show");
     });
 
     closeSignup.addEventListener("click", function () {
-        signupPopupOverlay.classList.remove("show");
+      signupPopupOverlay.classList.remove("show");
     });
 
     window.addEventListener("click", function (event) {
-        if (event.target == loginPopupOverlay) {
-            loginPopupOverlay.classList.remove("show");
-        }
-        if (event.target == signupPopupOverlay) {
-            signupPopupOverlay.classList.remove("show");
-        }
+      if (event.target == loginPopupOverlay) {
+        loginPopupOverlay.classList.remove("show");
+      }
+      if (event.target == signupPopupOverlay) {
+        signupPopupOverlay.classList.remove("show");
+      }
     });
   </script>
 
+  <script type="module">
+    import { auth, db, signInWithEmailAndPassword, createUserWithEmailAndPassword } from './firebaseinit.js';
+
+    document.getElementById('sign-up-form').addEventListener('submit', function (event) {
+      event.preventDefault();
+      signup(event);
+    });
+
+    document.getElementById('login-form').addEventListener('submit', function (event) {
+      event.preventDefault();
+      login(event);
+    });
+
+    function showLoader() {
+      loader.style.display = 'flex';
+    }
+
+    function hideLoader() {
+      loader.style.display = 'none';
+    }
+
+    function login(event) {
+      event.preventDefault();
+      const email = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      showLoader();
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          console.log("Logged in:", user);
+          alert('Logged in successfully!');
+          window.location.href = 'dashboard.html';
+        })
+        .catch((error) => {
+          console.error("Login failed:", error);
+          alert(error.message);
+        })
+        .finally(() => {
+          hideLoader();
+        });
+    }
+
+    function signup(event) {
+      event.preventDefault();
+      const email = document.getElementById('signup-email').value;
+      const password = document.getElementById('signup-password').value;
+
+      showLoader();
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(async (userCredential) => {
+          const user = userCredential.user;
+
+          await setDoc(doc(db, "users", user.uid), {
+            email: user.email,
+            signupDate: new Date().toISOString()
+          });
+
+          alert('Account created successfully!');
+          window.location.href = 'dashboard.html';
+        })
+        .catch((error) => {
+          console.error("Signup failed:", error);
+          alert(error.message);
+        }).finally(() => {
+          hideLoader();
+        });
+    }
+  </script>
 </body>
+
 </html>
